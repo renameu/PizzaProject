@@ -9,16 +9,30 @@ import java.util.Scanner;
 public class MyApplication {
     private final PizzeriaController controller;
     Scanner scanner = new Scanner(System.in);
-    public MyApplication(PizzeriaController controller) {
+
+    private static volatile MyApplication instance;
+
+    private MyApplication(PizzeriaController controller){
         this.controller = controller;
+    }
+
+    public static MyApplication getInstance(PizzeriaController controller) {
+        if (instance == null) {
+            synchronized (MyApplication.class) {
+                if (instance == null) {
+                    instance = new MyApplication(controller);
+                }
+            }
+        }
+        return instance;
     }
 
     public void start() {
         boolean exit = false;
         System.out.println("Welcome to Pizzeria 'Gigabyte' ");
         User user;
-        int age, id, cash, size, price;
-        String email, name, description, type;
+        int age, cash;
+        String email, name;
         while (!exit) {
             showMenu();
 
@@ -47,6 +61,20 @@ public class MyApplication {
                         String menu = controller.getPizzas();
                         System.out.println(menu);
                         break;
+                    case 3:
+                        System.out.print("Enter your id: ");
+                        int id = Integer.parseInt(scanner.nextLine());
+                        System.out.print("Enter id of your pizza: ");
+                        int pizza = Integer.parseInt(scanner.nextLine());
+                        boolean responce = controller.order(id, pizza);
+                        System.out.println((responce ? "You ordered succesfully" : "Try again..."));
+                        break;
+                    case 4:
+                        System.out.print("Enter id of order: ");
+                        int orderId = Integer.parseInt(scanner.nextLine());
+                        System.out.println("The order: ");
+                        System.out.println(controller.GetFullOrderDescription(orderId));
+                        break;
                     case 0:
                         exit = true;
                         break;
@@ -65,8 +93,8 @@ public class MyApplication {
     private static void showMenu() {
         System.out.println("1. Create user");
         System.out.println("2. Menu");
-        System.out.println("3. ");
-        System.out.println("4. ");
+        System.out.println("3. Make an order");
+        System.out.println("4. Show the order");
         System.out.println("5. ");
         System.out.println("6. ");
         System.out.println("0. Exit");

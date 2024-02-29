@@ -1,28 +1,45 @@
 package org.pizzas.services;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+
 import org.pizzas.Models.User;
-import org.pizzas.repositories.PizzeriaRepository;
+
 import org.pizzas.repositories.interfaces.IPizzeriaRepository;
 import org.pizzas.services.interfaces.IPizzeriaService;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
 public class PizzeriaService implements IPizzeriaService {
     private IPizzeriaRepository repo;
+
+    private static volatile PizzeriaService instance;
+    private PizzeriaService(IPizzeriaRepository repo){
+        this.repo = repo;
+    }
+
+    public static PizzeriaService getInstance(IPizzeriaRepository repo) {
+        if (instance == null) {
+            synchronized (PizzeriaService.class) {
+                if (instance == null) {
+                    instance = new PizzeriaService(repo);
+                }
+            }
+        }
+        return instance;
+    }
+
     @Override
     public boolean createUser(User user) {
-//        if (repo.userExists(user)) return false;
-
         boolean response = repo.createUser(user);
         return response;
     }
 
+    @Override
+    public String GetFullOrderDescription(int orderId){
+        return repo.GetFullOrderDescription(orderId);
+    }
+
+    @Override
+    public boolean order(int id, int pizza){
+        return repo.order(id, pizza);
+    }
     @Override
     public String getPizzas() {
         return repo.getPizzas();

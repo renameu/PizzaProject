@@ -10,11 +10,22 @@ import java.sql.*;
 public class PizzeriaRepository implements IPizzeriaRepository {
     private final IDB db;
 
-    public PizzeriaRepository(IDB db) {
-        System.out.println("Successfull connection");
+
+    private static volatile PizzeriaRepository instance;
+    private PizzeriaRepository(IDB db){
         this.db = db;
     }
 
+    public static PizzeriaRepository getInstance(IDB db) {
+        if (instance == null) {
+            synchronized (PizzeriaRepository.class) {
+                if (instance == null) {
+                    instance = new PizzeriaRepository(db);
+                }
+            }
+        }
+        return instance;
+    }
 
     public boolean createUser(User user) {
         Connection con = null;
@@ -73,5 +84,62 @@ public class PizzeriaRepository implements IPizzeriaRepository {
         return null;
     }
 
+    @Override
+    public boolean order(int id, int pizza){
+        Connection con = null;
+        try {
+            con = db.getConnection();
+            String sql = "INSERT INTO public.purchasehistory(\n" +
+                    "\t userid, pizza, data)\n" +
+                    "\tVALUES ( ?, ?, CURRENT_TIMESTAMP);";
+            PreparedStatement preparedStatement = con.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            preparedStatement.setInt(2, pizza);
+            preparedStatement.execute();
+            return true;
+        } catch (SQLException e) {
+            System.out.println("sql error: " + e.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("sql error: " + e.getMessage());
+            }
+        }
+        return false;
+    }
+
+
+    @Override
+    public String GetFullOrderDescription(int orderId) {
+        Connection con = null;
+        String menu = "";
+        try {
+            con = db.getConnection();
+            String sql = "SELECT orderid, userid, pizza, data\n" +
+                    "\tFROM public.purchasehistory WHERE orderid = ?;";
+            PreparedStatement preparedStatement = con.prepareStatement(sql);
+            preparedStatement.setInt(1, orderId);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()){
+                menu += resultSet.getInt("orderid") + " | " + "user id: "
+                        + resultSet.getInt("userid")+  " | pizza id: "
+                        + resultSet.getInt("pizza") + " | time: "
+                        + resultSet.getTime("data")
+                        + "\n";
+            }
+
+            return menu;
+        } catch (SQLException e) {
+            System.out.println("sql error: " + e.getMessage());
+        } finally {
+            try {
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                System.out.println("sql error: " + e.getMessage());
+            }
+        }
+        return "";
+    }
 
 }

@@ -1,4 +1,5 @@
 package org.pizzas;
+
 import org.pizzas.controllers.PizzeriaController;
 import org.pizzas.data.PostgresDB;
 import org.pizzas.data.interfaces.IDB;
@@ -9,11 +10,11 @@ import org.pizzas.services.interfaces.IPizzeriaService;
 
 public class Main {
     public static void main(String[] args) {
-        IDB db = new PostgresDB();
-        IPizzeriaRepository repo = new PizzeriaRepository(db);
-        IPizzeriaService service = new PizzeriaService(repo);
-        PizzeriaController controller = new PizzeriaController(service);
-        MyApplication app = new MyApplication(controller);
+        IDB db = PostgresDB.getInstance();
+        IPizzeriaRepository repo = PizzeriaRepository.getInstance(db);
+        IPizzeriaService service = PizzeriaService.getInstance(repo);
+        PizzeriaController controller = PizzeriaController.getInstance(service);
+        MyApplication app = MyApplication.getInstance(controller);
         app.start();
     }
 }
